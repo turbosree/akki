@@ -23,27 +23,28 @@ spec:
         ports:
         - containerPort: 8080
           protocol: TCP
-        livenessProbe:
-          failureThreshold: 3
-          initialDelaySeconds: 30
-          periodSeconds: 10    
-          successThreshold: 1
-          tcpSocket:
-            port: 8080
-          timeoutSeconds: 1
-        readinessProbe:
-          failureThreshold: 3
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          successThreshold: 1
-          tcpSocket:
-            port: 8080
-          timeoutSeconds: 1
-          resources:
-          limits:
-          # memory: 128Mi
-          securityContext:
-          # privileged: false
+# TODO: Define a liveness, readiness, startup probe suitable for a wss service. Define resource limits and security context.
+        # livenessProbe:
+        #   failureThreshold: 3
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 10    
+        #   successThreshold: 1
+        #   tcpSocket:
+        #     port: 8080
+        #   timeoutSeconds: 1
+        # readinessProbe:
+        #   failureThreshold: 3
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   tcpSocket:
+        #     port: 8080
+        #   timeoutSeconds: 1
+          # resources:
+          # limits:
+          # # memory: 128Mi
+          # securityContext:
+          # # privileged: false
 
 ---
 kind: Service
