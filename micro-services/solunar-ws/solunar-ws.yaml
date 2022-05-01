@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: solunar-ws
+spec:
+  selector:
+    matchLabels:
+      app: solunar-ws
+  replicas: 1 # 1
+  template:
+    metadata:
+      labels:
+        app: solunar-ws
+    spec:
+      containers:
+      - name: solunar-ws
+        image: solunar-ws:1.0.0
+        env:
+        - name: SOLUNAR_WS_LOG_LEVEL
+          value: "1"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 10    
+          successThreshold: 1
+          tcpSocket:
+            port: 8080
+          timeoutSeconds: 1
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 8080
+          timeoutSeconds: 1
+          resources:
+          limits:
+          # memory: 128Mi
+          securityContext:
+          # privileged: false
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: solunar-ws
+spec:
+  ports:
+    - protocol: TCP
+      port: 8080    
+      targetPort: 8080
+  selector:
+    app: solunar-ws

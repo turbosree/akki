@@ -1,0 +1,20 @@
+Test setup for DDS router using docker:
+---------------------------------------
+
+1. Run rust dds shapes demo subscriber with domain id=1
+
+docker run --network="host" -ti --rm dds-shape-demo-sub-1:1.0.0
+
+2. Run rust dds shapes demo publisher with domain id=2
+docker run --network="host" -ti --rm dds-shape-demo-pub-2:1.0.0
+
+3. Run RTI shapes demo with domain id=0 and publish a square with default settings
+
+./rtishapesdemo
+
+4. Run dds router with shapes demo configuration which routes messages between domain 0 and domain 1
+
+docker run --network="host" -ti --rm ddsrouter:1.0.6
+
+You can see that the subscriber started in step 1 is not printing the received square messages.
+Also observe that no messages from domain 2 is passing to domain 0.

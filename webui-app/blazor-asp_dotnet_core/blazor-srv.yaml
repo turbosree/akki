@@ -1,0 +1,66 @@
+#// ------------------------------------------------------------------------------------------------
+#/// \file                  Yaml file to deploy the simulation as a service on a kubernetese cluster 
+#/// \author                Sreejith.Naarakathil@gmail.com
+#/// \date                  27/3/2021
+#// ------------------------------------------------------------------------------------------------
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blazor-srv
+spec:
+  selector:
+    matchLabels:
+      app: blazor-srv
+  replicas: 1 # 1
+  template:
+    metadata:
+      labels:
+        app: blazor-srv
+    spec:
+      containers:
+      - name: blazor-srv
+        image: blazor-srv:2.0.1
+        env:
+        - name: BLAZOR_SRV_LOG_LEVEL
+          value: "1"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 10    
+          successThreshold: 1
+          tcpSocket:
+            port: 5000
+          timeoutSeconds: 1
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 5000
+          timeoutSeconds: 1
+          resources:
+          limits:
+          # memory: 128Mi
+          securityContext:
+          # privileged: false
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: blazor-srv
+spec:
+  ports:
+    - protocol: TCP
+      port: 8080    
+      targetPort: 5000
+  selector:
+    app: blazor-srv
+

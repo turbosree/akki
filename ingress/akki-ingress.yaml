@@ -1,0 +1,70 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: akki-ingress
+  # annotations:
+  # nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: akki.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: solunar-ws
+                port:
+                  number: 8080
+    - host: akki.ui
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: knote
+                port:
+                  number: 8080
+    - host: express.api
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: express-api
+                port:
+                  number: 8080
+    - host: blazor.ui
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: blazor-srv
+                port:
+                  number: 8080
+    - host: react.ui
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: react-ui
+                port:
+                  number: 8080
+    - host: akki.live
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: akki-live
+                port:
+                  number: 8080
+                  

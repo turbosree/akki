@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: express-api
+  template:
+    metadata:
+      labels:
+        app: express-api
+    spec:
+      containers:
+      - name: express-api
+        image: express-api:1.0.1
+        ports:
+        - containerPort: 3000
+        env:
+        - name: MONGO_URL
+          value: mongodb://mongo:27017/mongo-akki
+        imagePullPolicy: IfNotPresent
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: express-api
+spec:
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 3000
+  selector:
+    app: express-api
+
+
+
