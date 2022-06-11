@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: ddsserver
-        image: ddsserver:1.0.0
+        image: ddsserver:1.0.1
         env:
         - name: DDS_LOG_LEVEL
           value: "1"
