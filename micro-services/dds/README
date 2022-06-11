@@ -1,3 +1,19 @@
+Building DDS Suite in PC environment:
+-------------------------------------
+
+
+
+Build DDS service images:
+-------------------------
+Build RustDDS Publisher service (Domain ID 2) image using Dockerfile_RustDDS_Pub_D2.
+Build RustDDS Subscriber service (Domain ID 1) image using Dockerfile_RustDDS_Sub_D1.
+
+Build DDSRouter image:
+----------------------
+Build the docker image under a DDS router colcon build environment. Place the docker file in the same level as ddsrouter.repos
+Get the docker file from ddsrouter src repo.
+
+
 Test setup for DDS router using docker:
 ---------------------------------------
 

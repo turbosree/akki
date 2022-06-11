@@ -67,4 +67,14 @@ spec:
                 name: akki-live
                 port:
                   number: 8080
+    - host: dds.synergy
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ddssynergy
+                port:
+                  number: 8080
                   

@@ -4,17 +4,20 @@
 #
 # TODO: $ docker run --network="host" -ti --rm ddssynergy:1.0.5
 #[Integration Service][ERROR] [is::core::Config] Error parsing the IDL number '1' placed in the YAML config. Please, review and fix# your IDL specification syntax.
+# https://pkgs.alpinelinux.org/packages?name=gcc&branch=v3.10
 
 # Alpine is chosen to build the image because it has good support for creating
 # statically-linked, small programs. Currently the DDS router application is
 # not statically linked due to build issues in DDS Router.
 
 # nlohmann json has a build error gcc 10.3.1. Hence using debian
-# ARG DISTRO_VERSION=3.15.4
-# FROM alpine:${DISTRO_VERSION} AS base
+# alpine 3.12.12, 3.11.13 gcc 9. yaml parse error when starting application
+# 3.10.9
+ARG DISTRO_VERSION=3.12.12
+FROM alpine:${DISTRO_VERSION} AS base
 
-ARG DISTRO_VERSION=buster-slim
-FROM debian:${DISTRO_VERSION} AS base
+#ARG DISTRO_VERSION=buster-slim
+#FROM debian:${DISTRO_VERSION} AS base
 
 # Create separate targets for each phase, this allows us to cache intermediate
 # stages and makes the final deployment stage
@@ -25,54 +28,55 @@ FROM base AS devtools
 #   - ninja-build is a backend for CMake that often compiles faster than
 #     CMake with GNU Make.
 #   - Install the necessary libraries required for DDS router application.
-# RUN apk update && \
-#     apk add \
-#         asio-dev \
-#         tinyxml2-dev \
-#         build-base \
-#         cmake \
-#         git \
-#         gcc \
-#         g++ \
-#         libc-dev \
-#         yaml-cpp-dev \
-#         ninja \
-#         openssl-dev \
 #         openssl-libs-static \
-# 	py3-sphinx \
-# 	py3-sphinx_rtd_theme \
-#         websocket++ \
-# 	boost-dev \
-# 	libexecinfo \
-# 	libexecinfo-dev
-
-RUN apt-get update && \
-    apt-get install -y \
-        libasio-dev \
-        libtinyxml2-dev \
-        build-essential \
+RUN apk update && \
+    apk add \
+        asio-dev \
+        tinyxml2-dev \
+        build-base \
         cmake \
         git \
         gcc \
         g++ \
         libc-dev \
-        libyaml-cpp-dev \
-        libssl-dev \
-	python3-sphinx \
-	python3-sphinx-rtd-theme \
-        libwebsocketpp-dev \
-	libboost-program-options-dev \
-	libboost-system-dev
+        yaml-cpp-dev \
+        ninja \
+        openssl-dev \
+	py3-sphinx \
+	py3-sphinx_rtd_theme \
+        websocket++ \
+	boost-program_options \
+	boost-system \
+	libexecinfo \
+	libexecinfo-dev
+
+# RUN apt-get update && \
+#     apt-get install -y \
+#         libasio-dev \
+#         libtinyxml2-dev \
+#         build-essential \
+#         cmake \
+#         git \
+#         gcc \
+#         g++ \
+#         libc-dev \
+#         libyaml-cpp-dev \
+#         libssl-dev \
+# 	python3-sphinx \
+# 	python3-sphinx-rtd-theme \
+#         libwebsocketpp-dev \
+# 	libboost-program-options-dev \
+# 	libboost-system-dev
 
 # Copy the source code to /app and compile it.
 FROM devtools AS build
 WORKDIR /app
 COPY . /app
 RUN rm -rf build install log
-#RUN mkdir -p build/foonathan_memory_vendor
-#RUN mkdir -p build/fastcdr
-#RUN mkdir -p build/fastdds
-#RUN mkdir -p build/ddsrouter
+RUN mkdir -p build/foonathan_memory_vendor
+RUN mkdir -p build/fastcdr
+RUN mkdir -p build/fastdds
+RUN mkdir -p build/ddsrouter
 
 # Run the CMake in each dependency project and install it.
 WORKDIR /app/build/foonathan_memory_vendor
@@ -115,26 +119,43 @@ RUN make && make install
 
 
 # Create the final deployment image, using `alpine`as the starting point.
-FROM debian:${DISTRO_VERSION} AS final
+# FROM debian:${DISTRO_VERSION} AS final
+
+# Create the final deployment image, using `alpine`as the starting point.
+# DDS integration service use GNU C preprocessor (cpp) command in a popen system call
+# Since alpine do not have a separate cpp package adding gcc. TODO: Create a cpp package for alpine if
+# target image optimization is required.
+FROM alpine:${DISTRO_VERSION} AS final
+RUN apk update && \
+    apk add \
+        gcc \
+	libstdc++ \
+	libgcc \
+	tinyxml2 \
+	yaml-cpp \
+	boost-program_options \
+	boost-system
 
 # Copy the program and shared libraries from the previously created stage and make it the entry point.
+RUN mkdir -p /usr/local/lib/is
+COPY --from=build /usr/local/lib/is /usr/local/lib/is/
 COPY --from=build /usr/local/bin/integration-service /
-COPY --from=build /usr/local/share/is-core/examples/basic/fastdds_server__addtwoints.yaml /
-COPY --from=build /usr/local/lib/libfoonathan_memory* /lib/
-COPY --from=build /usr/local/lib/libfastcdr* /lib/
-COPY --from=build /usr/local/lib/libfastrtps* /lib/
-COPY --from=build /usr/local/lib/libis-core* /lib/
-COPY --from=build /usr/local/lib/libis-json-xtypes* /lib/
-COPY --from=build /usr/local/lib/libis-websocket* /lib/
-COPY --from=build /usr/local/lib/libis-fastdds* /lib/
+COPY --from=build /usr/local/share/is-core/examples/basic/* /
+COPY --from=build /usr/local/lib64/libfoonathan_memory* /usr/local/lib/
+COPY --from=build /usr/local/lib/libfastcdr* /usr/local/lib/
+COPY --from=build /usr/local/lib/libfastrtps* /usr/local/lib/
+COPY --from=build /usr/local/lib64/libis-core* /usr/local/lib/
+COPY --from=build /usr/local/lib64/libis-json-xtypes* /usr/local/lib/
+COPY --from=build /usr/local/lib64/libis-websocket* /usr/local/lib/
+COPY --from=build /usr/local/lib64/libis-fastdds* /usr/local/lib/
 
-RUN apt-get update && \
-    apt-get install -y \
-	libstdc++6 \
-	libgcc1 \
-	libyaml-cpp-dev \
-	libboost-program-options-dev \
-	libboost-system-dev
+# RUN apt-get update && \
+#     apt-get install -y \
+# 	libstdc++6 \
+# 	libgcc1 \
+# 	libyaml-cpp-dev \
+# 	libboost-program-options-dev \
+# 	libboost-system-dev
 
 ENTRYPOINT ["./integration-service"]
 CMD ["/fastdds_server__addtwoints.yaml"]
