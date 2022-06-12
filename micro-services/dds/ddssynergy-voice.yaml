@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ddsserver
+  name: ddssynergy-voice
 spec:
   selector:
     matchLabels:
-      app: ddsserver
+      app: ddssynergy-voice
   replicas: 1 # 1
   template:
     metadata:
       labels:
-        app: ddsserver
+        app: ddssynergy-voice
     spec:
       containers:
-      - name: ddsserver
-        image: ddsserver:1.0.2
+      - name: ddssynergy-voice
+        image: ddssynergy-voice:1.0.0
         env:
         - name: DDS_LOG_LEVEL
           value: "1"
@@ -62,11 +62,11 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: ddsserver
+  name: ddssynergy-voice
 spec:
   ports:
     - protocol: TCP
       port: 8080    
       targetPort: 8080
   selector:
-    app: ddsserver
+    app: ddssynergy-voice

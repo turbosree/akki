@@ -77,4 +77,14 @@ spec:
                 name: ddssynergy
                 port:
                   number: 8080
+    - host: dds.synergy.voice
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ddssynergy-voice
+                port:
+                  number: 8080
                   
