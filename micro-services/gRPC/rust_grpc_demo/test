@@ -1,0 +1,3 @@
+grpc_cli call localhost:50051 bookstore.Bookstore.GetBook "id: 'test-book-id'"
+
+grpcurl -insecure -authority akki.grpc 192.168.49.2:443 bookstore.Bookstore.GetBook

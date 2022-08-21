@@ -1,0 +1,22 @@
+# Docker file to build an image for gRPC demo example.
+# 
+# Eg: Run an image 'grpc-srv-demo:1.2' as,
+#
+#     docker run --network="host" -ti --rm grpc-srv-demo:1.2
+
+FROM rust:1.60.0-slim-buster AS build-env
+WORKDIR /app
+COPY . /app
+RUN apt-get update && \
+    apt-get install -y \
+        protobuf-compiler-grpc \
+        protobuf-compiler \
+        cmake \
+        build-essential
+
+RUN cargo build --release
+
+FROM gcr.io/distroless/cc
+COPY --from=build-env /app/target/release/rust_grpc_demo /
+ENTRYPOINT ["./rust_grpc_demo"]
+CMD ["", ""]
