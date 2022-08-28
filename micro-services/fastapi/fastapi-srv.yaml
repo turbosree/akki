@@ -1,0 +1,72 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-srv
+spec:
+  selector:
+    matchLabels:
+      app: fastapi-srv
+  replicas: 1 # 1
+  template:
+    metadata:
+      labels:
+        app: fastapi-srv
+    spec:
+      containers:
+      - name: fastapi-srv
+        image: fastapi-srv:1.0.3
+        env:
+        - name: DDS_LOG_LEVEL
+          value: "1"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+# TODO: Define a liveness probe method suitable for a DDS router. It is to check periodically that the router is alive. 
+# livenessProbe:
+#   failureThreshold: 10
+#   initialDelaySeconds: 120
+#   periodSeconds: 10    
+#   successThreshold: 1
+#   tcpSocket:
+#     port: 8080
+#   timeoutSeconds: 1
+# TODO: Define a start up probe method suitable for a DDS router. It is to synchronize the start of DDS router in the DDS application environment.
+# startupProbe:
+#   httpGet:
+#     path: /healthz
+#     port: liveness-port
+#   failureThreshold: 30
+#   periodSeconds: 10
+# TODO: Define a readiness probe suitable for a DDS router to flag when the router is not ready or is experiencing high meassage load.
+# readinessProbe:
+#   failureThreshold: 10
+#   initialDelaySeconds: 150
+#   periodSeconds: 10
+#   successThreshold: 1
+#   tcpSocket:
+#     port: 8080
+#   timeoutSeconds: 1
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
+          limits:
+            memory: 1Gi
+            cpu: 250m
+# TODO: Define a security context suitable for a DDS router to protect cyber security properties of the DDS router
+#          securityContext:
+#            privileged: false
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: fastapi-srv
+spec:
+  ports:
+    - protocol: TCP
+      port: 8080    
+      targetPort: 8080
+  selector:
+    app: fastapi-srv

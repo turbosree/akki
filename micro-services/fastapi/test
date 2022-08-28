@@ -1,0 +1,4 @@
+http://fast.api/items/5?q=somequery
+
+Response:
+{"item_id":5,"q":"somequery"}
